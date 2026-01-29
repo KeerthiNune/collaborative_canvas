@@ -8,16 +8,21 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-const clientPath = path.join(__dirname, "..", "client");
-app.use(express.static(clientPath));
+const clientDir = path.resolve(__dirname, "../client");
+
+// Serve static files
+app.use(express.static(clientDir));
+
+// Force index.html
+app.get("*", (req, res) => {
+  res.sendFile(path.join(clientDir, "index.html"));
+});
 
 io.on("connection", socket => {
-  console.log("User connected:", socket.id);
   rooms.join(socket);
-
   socket.on("disconnect", () => rooms.leave(socket));
 });
 
 server.listen(process.env.PORT || 3000, () => {
-  console.log("Server running");
+  console.log("Server started");
 });
